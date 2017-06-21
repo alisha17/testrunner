@@ -1,0 +1,10 @@
+[package]
+name = "testrunner"
+version = "0.1.0"
+authors = ["alisha <anejaalisha@yahoo.com>"]
+
+[dependencies]
+flate2 = "0.2"
+tar = "0.4.13"
+reqwest = "0.6.2"
+error-chain = "0.10.0"
