@@ -10,11 +10,9 @@ use std::io::Read;
 use std::path::Path;
 use flate2::read::GzDecoder;
 use tar::Archive;
-use std::env;
-use std::process::{Command, Output};
+use std::process::Command;
 
 mod errors {
-    // Create the Error, ErrorKind, ResultExt, and Result types
     error_chain!{
         foreign_links {
             IoError(::std::io::Error);
@@ -44,7 +42,9 @@ fn main() {
         ::std::process::exit(1);
     }
 
-    let r = test_crate(&env::current_dir().unwrap(),"cargo", &"test");
+    let cwd1 = "/home/alisha/temp_crate/zopfli-0.3.3";
+    let path1 = Path::new(&cwd1);
+    test_crate(path1);
 }
 
 fn download(url: &str) -> Result<reqwest::Response> {
@@ -58,7 +58,7 @@ fn unpack_to_folder<R: Read>(archive: &mut Archive<R>, path: &Path) -> Result<()
 }
 
 fn run() -> Result<()> {
-  let cwd = env::current_dir().unwrap();
+  let cwd = "/home/alisha/temp_crate";
   let path = Path::new(&cwd);
   let url = "https://crates-io.s3-us-west-1.amazonaws.com/crates/zopfli/zopfli-0.3.3.crate";
   let bin = download(&url).chain_err(
@@ -69,8 +69,10 @@ fn run() -> Result<()> {
   r
 }
 
-fn test_crate(cd: &Path, name: &str, args: &str) -> Result<()> {
-    let mut cmd = Command::new("cargo").arg("test").output()?;
+// cargo test using std::process::Command
+
+fn test_crate(cd: &Path) -> Result<()> {
+    let cmd = Command::new("cargo").arg("test").current_dir(cd).output()?;
     let cmdstr = format!{"{:?}", cmd};
 
     if cmd.status.success() {
@@ -79,19 +81,3 @@ fn test_crate(cd: &Path, name: &str, args: &str) -> Result<()> {
         Err(format!("command `{}` failed", cmdstr).into())
     }
 }
-
- /* .output().unwrap_or_else(|e| {
-            panic!("failed to execute process: {}", e)
-    });
-
-    if output.status.success() {
-        let s = String::from_utf8_lossy(&output.stdout);
-
-        print!("rustc succeeded and stdout was:\n{}", s);
-    } else {
-        let s = String::from_utf8_lossy(&output.stderr);
-
-        print!("rustc failed and stderr was:\n{}", s);
-    }
-}
-*/
