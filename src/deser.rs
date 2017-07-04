@@ -45,7 +45,6 @@ fn main() {
         Err(why) => panic!("couldn't read due to: {}", why.description()),
         Ok(_) => print!("contains: {}\n", s),
     }
-
     let decoded: Manifest = toml::from_str(&s).unwrap();
     println!("{:?}", decoded);
 }
