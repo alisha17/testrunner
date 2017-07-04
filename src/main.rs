@@ -81,3 +81,4 @@ fn test_crate(cd: &Path) -> Result<()> {
         Err(format!("command `{}` failed", cmdstr).into())
     }
 }
+
