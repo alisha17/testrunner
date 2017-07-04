@@ -96,26 +96,9 @@ use std::io::prelude::*;
 use std::path::Path;
 use std::collections::HashMap;
 use semver::Version;
+use toml::Value;
 
-#[derive(Debug, Deserialize)]
-struct Manifest {
-    package: Option<Box<Package>>,  
-    dependencies: Option<HashMap<String, Dependency>>
-}
 
-#[derive(Debug, Deserialize)]
- struct Package { 
-    name: String,
-    version: Option<String>,
-    authors: Option<Vec<String>>,
-    description: Option<String>,
-    license: Option<String>
- }
-
-#[derive(Debug, Deserialize)]
- struct Dependency {
-     version: semver::Version
- }
 
 fn main() {
     let path_to_read = Path::new("cargo-stdx.toml");
@@ -129,10 +112,17 @@ fn main() {
 
     match file.read_to_string(&mut s) {
         Err(why) => panic!("couldn't read due to: {}", why.description()),
-        Ok(_) => print!("contains: {}\n", s),
+        Ok(_) => print!("Reading successful"),
     }
-    let decoded: Manifest = toml::from_str(&s).unwrap();
-    println!("{:?}", decoded);
+    
+    let doc = s.parse::<Value>().unwrap();
+    let abc = doc["dependencies"].as_table().expect("dependency table");
+
+    for (key, value) in abc {
+            println!("{:?}, {:?}", key, value.as_str());
+    }
+
+
 }
 
 
