@@ -99,7 +99,6 @@ use semver::Version;
 use toml::Value;
 
 
-
 fn main() {
     let path_to_read = Path::new("cargo-stdx.toml");
 
@@ -119,9 +118,24 @@ fn main() {
     let abc = doc["dependencies"].as_table().expect("dependency table");
 
     for (key, value) in abc {
-            println!("{:?}, {:?}", key, value.as_str());
-    }
+            match value.as_table() {
+                Some(x) => {
+                    for (k, v) in x {
+                        if k == "version" {
+                            println!("{} : {}", key, v);
+                        }
+                    }
+                },
+                None    => {},
+            }
 
+            match value.as_str() {
+                Some(x) => println!("{} : {}", key, x),
+                // The division was invalid
+                None    => {},
+            } 
+            
+    }
 
 }
 
