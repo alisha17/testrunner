@@ -1,16 +1,22 @@
-/*#![recursion_limit = "1024"]
+#![recursion_limit = "1024"]
 
 #[macro_use]
 extern crate error_chain;
 extern crate reqwest;
 extern crate flate2;
 extern crate tar;
+extern crate toml;
 
-use std::io::Read;
+use std::error::Error;
+use std::fs::File;
+use std::io::prelude::*;
 use std::path::Path;
+use std::collections::HashMap;
+use toml::Value;
 use flate2::read::GzDecoder;
 use tar::Archive;
 use std::process::Command;
+mod crates;
 
 mod errors {
     error_chain!{
@@ -60,14 +66,18 @@ fn unpack_to_folder<R: Read>(archive: &mut Archive<R>, path: &Path) -> Result<()
 fn run() -> Result<()> {
   let cwd = "/home/alisha/temp_crate";
   let path = Path::new(&cwd);
-  let url = "https://crates-io.s3-us-west-1.amazonaws.com/crates/zopfli/zopfli-0.3.3.crate";
-  let bin = download(&url).chain_err(
-        || format!("unable to download {}", url),
-  )?;
-  let mut tar = Archive::new(GzDecoder::new(bin)?);
-  let r = unpack_to_folder(&mut tar, path).chain_err(|| "unable to unpack crate tarball");
-  r
-}
+  crates::extract_crate_info();
+  for (crate_name, version) in crate_info {
+    println!("{}: \"{}\"", crate_name, version);
+    let url = format!("https://crates-io.s3-us-west-1.amazonaws.com/crates/{0}/{0}-{1}.crate", crate_name, version);
+    let bin = download(&url).chain_err(
+        || format!("unable to download from {}", url),
+    )?;
+    let mut tar = Archive::new(GzDecoder::new(bin)?);
+    let r = unpack_to_folder(&mut tar, path).chain_err(|| "unable to unpack crate tarball");
+    r
+  }
+}  
 
 // cargo test using std::process::Command
 
@@ -80,63 +90,6 @@ fn test_crate(cd: &Path) -> Result<()> {
     } else {
         Err(format!("command `{}` failed", cmdstr).into())
     }
-}
-
-*/
-
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate toml;
-#[macro_use]
-extern crate semver;
-use std::error::Error;
-use std::fs::File;
-use std::io::prelude::*;
-use std::path::Path;
-use std::collections::HashMap;
-use semver::Version;
-use toml::Value;
-
-
-fn main() {
-    let path_to_read = Path::new("cargo-stdx.toml");
-
-    let mut file = match File::open(&path_to_read) {
-        Err(why) => panic!("couldn't open due to: {}", why.description()),
-        Ok(file) => file,
-    };
-
-    let mut s = String::new();
-
-    match file.read_to_string(&mut s) {
-        Err(why) => panic!("couldn't read due to: {}", why.description()),
-        Ok(_) => print!("Reading successful"),
-    }
-    
-    let doc = s.parse::<Value>().unwrap();
-    let abc = doc["dependencies"].as_table().expect("dependency table");
-
-    for (key, value) in abc {
-            match value.as_table() {
-                Some(x) => {
-                    for (k, v) in x {
-                        if k == "version" {
-                            println!("{} : {}", key, v);
-                        }
-                    }
-                },
-                None    => {},
-            }
-
-            match value.as_str() {
-                Some(x) => println!("{} : {}", key, x),
-                // The division was invalid
-                None    => {},
-            } 
-            
-    }
-
 }
 
 
