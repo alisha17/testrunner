@@ -48,9 +48,12 @@ fn main() {
         ::std::process::exit(1);
     }
 
-    let cwd1 = "/home/alisha/temp_crate/zopfli-0.3.3";
-    let path1 = Path::new(&cwd1);
-    test_crate(path1);
+    for (crate_name, version) in crate_info {
+        println!("{}: \"{}\"", crate_name, version);
+        let cwd1 = format!("/home/alisha/temp_crate/{}-{}", crate_name, version);
+        let path1 = Path::new(&cwd1);
+        test_crate(path1);
+    }    
 }
 
 fn download(url: &str) -> Result<reqwest::Response> {
@@ -68,14 +71,14 @@ fn run() -> Result<()> {
   let path = Path::new(&cwd);
   crates::extract_crate_info();
   for (crate_name, version) in crate_info {
-    println!("{}: \"{}\"", crate_name, version);
-    let url = format!("https://crates-io.s3-us-west-1.amazonaws.com/crates/{0}/{0}-{1}.crate", crate_name, version);
-    let bin = download(&url).chain_err(
-        || format!("unable to download from {}", url),
-    )?;
-    let mut tar = Archive::new(GzDecoder::new(bin)?);
-    let r = unpack_to_folder(&mut tar, path).chain_err(|| "unable to unpack crate tarball");
-    r
+        println!("{}: \"{}\"", crate_name, version);
+        let url = format!("https://crates-io.s3-us-west-1.amazonaws.com/crates/{0}/{0}-{1}.crate", crate_name, version);
+        let bin = download(&url).chain_err(
+            || format!("unable to download from {}", url),
+        )?;
+        let mut tar = Archive::new(GzDecoder::new(bin)?);
+        let r = unpack_to_folder(&mut tar, path).chain_err(|| "unable to unpack crate tarball");
+        r
   }
 }  
 
