@@ -2,6 +2,7 @@
 name = "testrunner"
 version = "0.1.0"
 authors = ["alisha <anejaalisha@yahoo.com>"]
+build = "build.rs"
 
 [dependencies]
 flate2 = "0.2"
@@ -10,3 +11,4 @@ reqwest = "0.6.2"
 error-chain = "0.10.0"
 toml = "0.4"
 walkdir = "1"
+

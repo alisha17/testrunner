@@ -1,5 +1,4 @@
 #![recursion_limit = "1024"]
-
 #[macro_use]
 extern crate error_chain;
 extern crate reqwest;
@@ -8,6 +7,7 @@ extern crate tar;
 extern crate toml;
 extern crate walkdir;
 
+use std::env;
 use std::error::Error;
 use std::fs::File;
 use walkdir::WalkDir;
@@ -27,6 +27,7 @@ mod errors {
     error_chain!{
         foreign_links {
             IoError(::std::io::Error);
+            VarError(::std::env::VarError);
             ReqwestError(::reqwest::Error);
         }
     }
@@ -35,10 +36,12 @@ mod errors {
 use errors::*;
 
 fn run() -> Result<()> {
-  let cwd = "/home/alisha/temp_crate";
+ /* let cwd = "/home/alisha/temp_crate";
   let path = PathBuf::from(&cwd);
   let mut crate_version = crates::get_crates_and_versions();
-  crates::download_tarballs(&path, crate_version);
+  crates::download_tarballs(&path, crate_version);*/
+  //println!(env!("OUT_DIR"));
+  //runtest::generate_file();
  // let cache_dir: PathBuf = env::var("OUT_DIR").join("tarball-cache")
  // println!("{:?}", crate_version);
   //runtest::generate_tests(&path, crate_version);
