@@ -40,7 +40,6 @@ pub fn get_crates_and_versions() -> HashMap<String, String> {
         if let Some(x) = value.as_str() {
              crate_info.insert(key.to_string(), x.to_string());
         }
-    
     }
     crate_info
 }
