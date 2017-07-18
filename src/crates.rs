@@ -64,7 +64,7 @@ pub fn download_tarballs(path: &PathBuf, crate_version: HashMap<String, String>)
                 let client = reqwest::Client::new().expect("could not setup https client");
                 let bin: reqwest::Response = client.get(&url).send()?;
                 let mut tar = Archive::new(GzDecoder::new(bin)?);
-                //println!("before unpacking to gitfolder");
+                //println!("before unpacking to folder");
                 let archive = &mut tar;
                 archive.unpack(&path).chain_err(|| "unable to unpack crate tarball")?;
            // }
