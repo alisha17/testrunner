@@ -21,7 +21,6 @@ use toml::Value;
 use flate2::read::GzDecoder;
 use tar::Archive;
 use std::process::Command;
-mod crates;
 
 mod errors {
     error_chain!{
@@ -40,5 +39,4 @@ fn run() -> Result<()>{
 }  
 
 quick_main!(run);
-
 

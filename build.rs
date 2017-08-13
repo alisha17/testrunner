@@ -75,7 +75,6 @@ pub fn get_crates_and_versions() -> HashMap<String, String> {
 }
 
 pub fn download_tarballs(path: &Path, crate_version: &HashMap<String, String>) -> Result<()>{
-    println!("{:?}",path);
    for (crate_name, version) in crate_version {
         //let mut path_to_crate = path.join(ver);
             //if Path::new(&path_to_crate).exists() == false {
@@ -97,11 +96,11 @@ pub fn download_tarballs(path: &Path, crate_version: &HashMap<String, String>) -
 fn main() {
     let c_dir = env::var("OUT_DIR").unwrap();
     let a_dir = PathBuf::from(&c_dir).as_path().join("tarball-cache");
-    let tem = create_dir_all(a_dir).unwrap();
+    create_dir_all(a_dir).unwrap();
     let tempnew = format!("{}/tarball-cache/", &c_dir);
     let cache_dir = Path::new(&tempnew);
     println!("{:?}",cache_dir);
-    let mut crate_version = get_crates_and_versions();
+    let crate_version = get_crates_and_versions();
     println!("{:?}", crate_version);
 
     download_tarballs(&cache_dir, &crate_version);
@@ -113,6 +112,23 @@ fn generate_tests(cache_dir: &Path, crates: &HashMap<String, String>) {
     let out_dir = env::var("OUT_DIR").unwrap();
     let destpath = Path::new(&out_dir).join("sdx-tests.rs");
     let mut dest_path = File::create(&destpath).unwrap();
+
+    let imports = [
+        "extern crate flate2;\n",
+        "extern crate tar;\n",
+        "extern crate tempdir;\n",
+
+        "use std::path::Path;\n",
+        "use flate2::read::GzDecoder;\n",
+        "use tar::Archive;\n",
+        "use std::process::Command;\n",
+        "use std::io::Read;\n",
+        "use tempdir::TempDir;\n",
+        "use std::fs::File;\n",
+    ].concat();
+
+    dest_path.write(imports.as_bytes());
+
     // For each crate  
     for (name, version) in crates {
         println!("inside for");
@@ -121,23 +137,27 @@ fn generate_tests(cache_dir: &Path, crates: &HashMap<String, String>) {
 }
 
 fn generate_single_test(dest_path: &mut File, cache_dir: &Path, name: &String, version: &String) {
+    
+    let dl_crate = format!("{}-{}.crate",name, version);
+    let mut new_path = cache_dir.join(dl_crate);
+    let new_path = new_path.to_str();
 
     let expected = [
         "#[test]\n",
         "fn test_",name,"(){\n",
-        "let outdir = TempDir::new('temptest').unwrap();\n",
-        "let new_path = cache_dir.join('",name,"-",version,".crate');\n",
-        "let mut tar = Archive::new(GzDecoder::new(new_path)?)\n",
+        "let outdir = TempDir::new(\"testrunner\").unwrap();\n",
+        "let new_path = File::create(\"",new_path,"\");\n",
+        "let mut tar = Archive::new(GzDecoder::new(new_path));\n",
         "let archive = &mut tar;\n",
         "archive.unpack(outdir);\n",
-        "let mut path_to_test : &Path = outdir.clone();\n",
-        "let mut path_to_test = path_to_test.join('",name,"-",version,"');\n",
-        "let cmd = Command::new('cargo').arg('test').current_dir(path_to_test).output()?;\n",
-        "if cmd.status.success() {\n",
-        "    println!('It was a success!');\n",
-        "    Ok(())\n",
-        "} else {\n",
-        "    Err(panic('command failed'))\n",
+        "let mut path_to_test = outdir.path().join(\"",name,"-",version,"\");\n",
+        "let cmd = Command::new(\"cargo\").arg(\"test\").current_dir(path_to_test).output().unwrap();\n",
+        "match cmd.status.success() {\n",
+        "  True => {},\n",
+        "  False => panic!(\"Test didn't pass!\")\n",
+        "}\n",
+        "drop(outdir);",
+        "outdir.close();",
         "}\n",
       ].concat();
 
