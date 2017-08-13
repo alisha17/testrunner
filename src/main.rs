@@ -6,6 +6,7 @@ extern crate flate2;
 extern crate tar;
 extern crate toml;
 extern crate walkdir;
+extern crate tempdir;
 
 use std::env;
 use std::error::Error;
@@ -21,7 +22,6 @@ use flate2::read::GzDecoder;
 use tar::Archive;
 use std::process::Command;
 mod crates;
-mod runtest;
 
 mod errors {
     error_chain!{
@@ -35,17 +35,8 @@ mod errors {
 
 use errors::*;
 
-fn run() -> Result<()> {
- /* let cwd = "/home/alisha/temp_crate";
-  let path = PathBuf::from(&cwd);
-  let mut crate_version = crates::get_crates_and_versions();
-  crates::download_tarballs(&path, crate_version);*/
-  //println!(env!("OUT_DIR"));
-  //runtest::generate_file();
- // let cache_dir: PathBuf = env::var("OUT_DIR").join("tarball-cache")
- // println!("{:?}", crate_version);
-  //runtest::generate_tests(&path, crate_version);
-  Ok(())
+fn run() -> Result<()>{
+    Ok(())
 }  
 
 quick_main!(run);

@@ -3,6 +3,7 @@ extern crate flate2;
 extern crate tar;
 extern crate toml;
 extern crate walkdir;
+extern crate tempdir;
 
 use std::error::Error;
 use std::fs::File;
@@ -14,6 +15,9 @@ use tar::Archive;
 use std::process::Command;
 use std::collections::HashMap;
 use toml::Value;
+use std::fs::OpenOptions;
+use std::io;
+use std::io::Write;
 
 use errors::*;
 
@@ -62,12 +66,18 @@ pub fn download_tarballs(path: &PathBuf, crate_version: HashMap<String, String>)
             //if Path::new(&path_to_crate).exists() == false {
                 let url = format!("https://crates-io.s3-us-west-1.amazonaws.com/crates/{0}/{0}-{1}.crate", crate_name, version);
                 let client = reqwest::Client::new().expect("could not setup https client");
-                let bin: reqwest::Response = client.get(&url).send()?;
-                let mut tar = Archive::new(GzDecoder::new(bin)?);
+                let mut bin: reqwest::Response = client.get(&url).send()?;
+                let dl_crate = format!("{}-{}.crate",crate_name, version);
+                let new_path = path.join(dl_crate);
+                println!("{:?}",new_path);
+                let mut file = OpenOptions::new().write(true).create(true).open(new_path);
+                io::copy(& mut bin, & mut file.unwrap());  
+                //let mut tar = Archive::new(GzDecoder::new(bin)?);
                 //println!("before unpacking to folder");
-                let archive = &mut tar;
-                archive.unpack(&path).chain_err(|| "unable to unpack crate tarball")?;
+                //let archive = &mut tar;
+                //archive.unpack(&path).chain_err(|| "unable to unpack crate tarball")?;
            // }
+
             //test_crate(Path::new(&path_to_crate));
         }     
         Ok(())
@@ -75,18 +85,18 @@ pub fn download_tarballs(path: &PathBuf, crate_version: HashMap<String, String>)
 
 // cargo test using std::process::Command
 
-pub fn test_crate(cache_dir: &PathBuf) -> Result<()> {
-    let cmd = Command::new("cargo").arg("test").current_dir(cache_dir).output()?;
-    let cmdstr = format!{"{:?}", cmd};
-    println!("{:?}", cmdstr);
+// pub fn test_crate(cache_dir: &PathBuf) -> Result<()> {
+//     let cmd = Command::new("cargo").arg("test").current_dir(cache_dir).output()?;
+//     let cmdstr = format!{"{:?}", cmd};
+//     println!("{:?}", cmdstr);
 
-    if cmd.status.success() {
-        println!("It was a success!");
-        Ok(())
-    } else {
-        Err(format!("command `{}` failed", cmdstr).into())
-    }
-}
+//     if cmd.status.success() {
+//         println!("It was a success!");
+//         Ok(())
+//     } else {
+//         Err(format!("command `{}` failed", cmdstr).into())
+//     }
+// }
 
 
 
