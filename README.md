@@ -5,7 +5,7 @@ originally planned to become a part of the [stx](https://github.com/brson/stdx) 
 
 Nevertheless, this project was a great way for me to learn about Rust and build scripts.
 
-## Aim of the project ##
+### Aim of the project ###
 
 This project autogenerates tests for each crate in Cargo-stdx.toml, and subsequently tests each crate.
 To learn more about build scripts, check out here: [build scripts](http://doc.crates.io/build-script.html).
